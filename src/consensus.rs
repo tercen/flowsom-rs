@@ -9,6 +9,9 @@
 //!
 //! Only the path FlowSOM takes is here: `clusterAlg = "hc"`, `distance = "euclidean"`,
 //! `reps = 100`, `pItem = 0.9`, `pFeature = 1`, average linkage inside and out.
+//! `ml` is indexed by `k` throughout, with slots 0 and 1 unused, so that the code reads the way
+//! `ml[[k]]` reads in the original.
+#![allow(clippy::needless_range_loop)]
 use crate::hclust::{self, Linkage};
 use crate::rng::RRng;
 
