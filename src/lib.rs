@@ -4,5 +4,6 @@
 //! The point of the port is that it gives the *same clusters*, not merely similar ones, so it
 //! reproduces R's random stream ([`rng`]) and the training loop's arithmetic down to the
 //! truncation quirks in the original C ([`som`]).
+pub mod hclust;
 pub mod rng;
 pub mod som;
