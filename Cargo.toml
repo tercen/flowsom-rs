@@ -1,0 +1,14 @@
+[package]
+name = "flowsom"
+version = "0.1.0"
+edition = "2024"
+description = "FlowSOM's self-organising map and metaclustering in Rust, at parity with the R implementation Tercen runs"
+license = "GPL-3.0"
+repository = "https://github.com/tercen/flowsom-rs"
+readme = "README.md"
+
+[dependencies]
+
+[profile.release]
+opt-level = 3
+lto = "thin"
