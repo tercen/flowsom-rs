@@ -3,7 +3,7 @@ name = "flowsom"
 version = "0.1.0"
 edition = "2024"
 description = "FlowSOM's self-organising map and metaclustering in Rust, at parity with the R implementation Tercen runs"
-license = "GPL-3.0"
+license = "GPL-2.0-only"
 repository = "https://github.com/tercen/flowsom-rs"
 readme = "README.md"
 
