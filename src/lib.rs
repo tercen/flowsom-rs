@@ -5,6 +5,7 @@
 //! reproduces R's random stream ([`rng`]) and the training loop's arithmetic down to the
 //! truncation quirks in the original C ([`som`]).
 pub mod consensus;
+pub mod flowsom;
 pub mod hclust;
 pub mod rng;
 pub mod som;
