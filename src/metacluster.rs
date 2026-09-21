@@ -114,16 +114,43 @@ pub fn metaclustering(data: &[f64], n: usize, p: usize, max_k: usize, seed: u32)
     consensus::metacluster_consensus(data, n, p, k, seed)
 }
 
+/// Neumaier's compensated sum: the correctly rounded total, whatever the order.
+///
+/// R accumulates `colMeans` and `sum` in **long double** — 64 bits of mantissa on x86 — and a
+/// plain `f64` loop is off by a few ulp against it. That is not a rounding curiosity here: a few
+/// ulp in the scaled data changes which node a cell is nearest, and SOM training is chaotic, so
+/// a quarter of the cells end up on a different node (their metacluster, measured on the
+/// reference data, does not move). Compensated summation is correctly rounded, which is what
+/// R's extended precision is buying, so the two agree.
+fn neumaier_sum(xs: impl Iterator<Item = f64>) -> f64 {
+    let mut sum = 0.0f64;
+    let mut c = 0.0f64;
+    for x in xs {
+        let t = sum + x;
+        if sum.abs() >= x.abs() {
+            c += (sum - t) + x;
+        } else {
+            c += (x - t) + sum;
+        }
+        sum = t;
+    }
+    sum + c
+}
+
 /// `scale(x, center = TRUE, scale = TRUE)` per column — what `FlowSOM(scale = TRUE)` applies
-/// before the map sees the data. The standard deviation is R's, with `n - 1`.
+/// before the map sees the data.
+///
+/// R's own steps, in R's own order: centre by `colMeans`, then divide by
+/// `sqrt(sum(v^2) / (n - 1))` of the centred column. Both sums are compensated, for the reason
+/// in [`neumaier_sum`].
 pub fn scale_columns(data: &mut [f64], n: usize, p: usize) {
     for col in 0..p {
         let s = &mut data[col * n..(col + 1) * n];
-        let mean = s.iter().sum::<f64>() / n as f64;
+        let mean = neumaier_sum(s.iter().copied()) / n as f64;
         for v in s.iter_mut() {
             *v -= mean;
         }
-        let sd = (s.iter().map(|v| v * v).sum::<f64>() / (n as f64 - 1.0)).sqrt();
+        let sd = (neumaier_sum(s.iter().map(|v| v * v)) / (n as f64 - 1.0)).sqrt();
         if sd > 0.0 {
             for v in s.iter_mut() {
                 *v /= sd;
