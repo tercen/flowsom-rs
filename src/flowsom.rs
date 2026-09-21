@@ -35,20 +35,43 @@ impl FlowSom {
     }
 }
 
+/// `FlowSOM.params` plus the seed: everything the call needs that is not the data.
+#[derive(Debug, Clone, Copy)]
+pub struct Params {
+    pub xdim: usize,
+    pub ydim: usize,
+    /// `nClus`: how many metaclusters to cut the map into.
+    pub n_clus: usize,
+    /// Passes over the data during training. FlowSOM's default is 10.
+    pub rlen: usize,
+    pub seed: u32,
+}
+
+impl Default for Params {
+    fn default() -> Self {
+        // CytoNorm's own parameters, not FlowSOM's 10x10: a small map over a subsample.
+        Self {
+            xdim: 5,
+            ydim: 5,
+            n_clus: 10,
+            rlen: 10,
+            seed: 1,
+        }
+    }
+}
+
 /// `FlowSOM(input, xdim, ydim, nClus, scale = FALSE, seed)`.
 ///
 /// `data` is column-major, `n × p`. The RNG is seeded once, as `FlowSOM()` does, and the
 /// metaclustering reseeds from the same number, as `metaClustering_consensus(seed = seed)` does.
-pub fn fit(
-    data: &[f64],
-    n: usize,
-    p: usize,
-    xdim: usize,
-    ydim: usize,
-    n_clus: usize,
-    rlen: usize,
-    seed: u32,
-) -> FlowSom {
+pub fn fit(data: &[f64], n: usize, p: usize, params: &Params) -> FlowSom {
+    let Params {
+        xdim,
+        ydim,
+        n_clus,
+        rlen,
+        seed,
+    } = *params;
     let ncodes = xdim * ydim;
     let mut rng = RRng::set_seed(seed);
     // `codes <- data[sample(1:nrow(data), nCodes, replace = FALSE), ]`

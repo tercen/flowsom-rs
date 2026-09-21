@@ -37,7 +37,18 @@ fn ints(path: &str) -> Vec<usize> {
 #[test]
 fn the_whole_chain_matches_r() {
     let (data, n, p) = read_matrix("e2e_input.csv");
-    let fsom = flowsom::fit(&data, n, p, 5, 5, 5, 10, 1);
+    let fsom = flowsom::fit(
+        &data,
+        n,
+        p,
+        &flowsom::Params {
+            xdim: 5,
+            ydim: 5,
+            n_clus: 5,
+            rlen: 10,
+            seed: 1,
+        },
+    );
 
     let (codes, ncodes, _) = read_matrix("e2e_codes.csv");
     assert_eq!(ncodes, 25);
