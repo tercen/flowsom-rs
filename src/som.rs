@@ -20,6 +20,7 @@ impl Dist {
     /// double, so both truncate towards zero before taking the absolute value. Reproduced
     /// deliberately — the point of this crate is to give the same clusters as the R FlowSOM in
     /// use, not a better distance.
+    #[allow(clippy::too_many_arguments)]
     fn of(
         self,
         data: &[f64],
@@ -136,7 +137,7 @@ pub fn train(
 
     let mut k = 0usize;
     while k < niter {
-        if k % n == 0 {
+        if k.is_multiple_of(n) {
             // The original writes `k = niter` to break, then still runs the body once more
             // before the loop test. Reproduced: the epoch that decides to stop also trains.
             if change < 1.0 {
