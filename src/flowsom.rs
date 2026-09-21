@@ -5,6 +5,7 @@
 //! scaling before a cofactor-transformed channel would be a second normalisation nobody asked
 //! for.
 use crate::consensus;
+use crate::metacluster;
 use crate::rng::RRng;
 use crate::som::{self, Dist};
 
@@ -35,13 +36,22 @@ impl FlowSom {
     }
 }
 
+/// How many metaclusters to produce.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Clusters {
+    /// `nClus`: a fixed number.
+    Fixed(usize),
+    /// `maxMeta`: `MetaClustering` picks k by the elbow of the within-cluster sum of squares.
+    UpTo(usize),
+}
+
 /// `FlowSOM.params` plus the seed: everything the call needs that is not the data.
 #[derive(Debug, Clone, Copy)]
 pub struct Params {
     pub xdim: usize,
     pub ydim: usize,
-    /// `nClus`: how many metaclusters to cut the map into.
-    pub n_clus: usize,
+    /// How many metaclusters to cut the map into.
+    pub clusters: Clusters,
     /// Passes over the data during training. FlowSOM's default is 10.
     pub rlen: usize,
     pub seed: u32,
@@ -53,7 +63,7 @@ impl Default for Params {
         Self {
             xdim: 5,
             ydim: 5,
-            n_clus: 10,
+            clusters: Clusters::Fixed(10),
             rlen: 10,
             seed: 1,
         }
@@ -62,13 +72,15 @@ impl Default for Params {
 
 /// `FlowSOM(input, xdim, ydim, nClus, scale = FALSE, seed)`.
 ///
-/// `data` is column-major, `n × p`. The RNG is seeded once, as `FlowSOM()` does, and the
-/// metaclustering reseeds from the same number, as `metaClustering_consensus(seed = seed)` does.
+/// `data` is column-major, `n × p`, and already scaled if it is going to be
+/// ([`metacluster::scale_columns`]) — `FlowSOM()` scales in `ReadInput`, before the map. The RNG
+/// is seeded once, as `FlowSOM()` does, and the metaclustering reseeds from the same number, as
+/// `metaClustering_consensus(seed = seed)` does.
 pub fn fit(data: &[f64], n: usize, p: usize, params: &Params) -> FlowSom {
     let Params {
         xdim,
         ydim,
-        n_clus,
+        clusters,
         rlen,
         seed,
     } = *params;
@@ -103,7 +115,10 @@ pub fn fit(data: &[f64], n: usize, p: usize, params: &Params) -> FlowSom {
         .iter()
         .map(|m| m.node)
         .collect();
-    let metaclustering = consensus::metacluster_consensus(&codes, ncodes, p, n_clus, seed);
+    let metaclustering = match clusters {
+        Clusters::Fixed(k) => consensus::metacluster_consensus(&codes, ncodes, p, k, seed),
+        Clusters::UpTo(max_k) => metacluster::metaclustering(&codes, ncodes, p, max_k, seed),
+    };
 
     FlowSom {
         codes,

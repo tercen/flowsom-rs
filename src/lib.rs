@@ -7,5 +7,6 @@
 pub mod consensus;
 pub mod flowsom;
 pub mod hclust;
+pub mod metacluster;
 pub mod rng;
 pub mod som;

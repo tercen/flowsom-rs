@@ -44,7 +44,7 @@ fn the_whole_chain_matches_r() {
         &flowsom::Params {
             xdim: 5,
             ydim: 5,
-            n_clus: 5,
+            clusters: flowsom::Clusters::Fixed(5),
             rlen: 10,
             seed: 1,
         },
