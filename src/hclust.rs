@@ -7,6 +7,11 @@
 //!
 //! Distances are held the way the Fortran holds them, in lower-half-diagonal order, so `IOFFST`
 //! below is the original's index arithmetic rather than a translation of it.
+//!
+//! The loops keep the original's shape and its 1-based indices so that this file can be read
+//! beside `hclust.f` and `hclust-utils.c`. The two lints allowed below would each be an
+//! improvement to idiomatic Rust and a loss of that correspondence.
+#![allow(clippy::mut_range_bound, clippy::needless_range_loop)]
 
 /// `IOFFST(N,I,J)` for 1-based `i < j`, returning a 0-based offset.
 #[inline]
@@ -205,9 +210,7 @@ fn hcass2(n: usize, ia: &[usize], ib: &[usize]) -> (Vec<(i32, i32)>, Vec<usize>)
         iia[i] = -iia[i];
         iib[i] = -iib[i];
         if iia[i] > 0 && iib[i] < 0 {
-            let k = iia[i];
-            iia[i] = iib[i];
-            iib[i] = k;
+            std::mem::swap(&mut iia[i], &mut iib[i]);
         }
         if iia[i] > 0 && iib[i] > 0 {
             let (k1, k2) = (iia[i].min(iib[i]), iia[i].max(iib[i]));
