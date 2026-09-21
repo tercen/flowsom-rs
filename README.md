@@ -57,5 +57,6 @@ than rewritten —
 which is "GPL version 2" without the "or later". FlowSOM itself is GPL (>= 2) and R's `hclust` is
 GPL-2+, so the map alone could be GPL-3; the consensus module is what pins this.
 
-That matters downstream: **an AGPL-3 operator cannot link this crate as it stands.** See
-`STATUS.md`.
+That matters downstream: an AGPL-3 operator cannot link this crate at all — there is no
+combination of GPL-2-only and AGPL-3 that may be distributed. `cytonorm_rust_operator` moved to
+GPL-2-or-later for exactly this reason; its `LICENSING.md` has the chain.

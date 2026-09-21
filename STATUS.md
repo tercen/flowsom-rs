@@ -1,7 +1,6 @@
 # flowsom-rs — status, 2026-09-21
 
-Built to give CytoNorm its clustering. **Local git only: no remote, nothing published**, because
-of the licence question below, which is not mine to decide.
+Built to give CytoNorm its clustering. Published at `github.com/tercen/flowsom-rs`.
 
 ## Where it got to
 
@@ -12,33 +11,19 @@ ConsensusClusterPlus's hundred resamples, and `FlowSOM()` end to end.
 `cargo test` is 11 tests, all parity against fixtures generated in `lucas501/cytonorm_docker:1.1.9`.
 Everything committed is synthetic and seeded; no study data is here or will be.
 
-## The licence question, for Faris
+## The licence, settled 2026-09-21
 
-| package | licence |
-|---|---|
-| FlowSOM | GPL (>= 2) |
-| R's `hclust` | GPL-2+ |
-| **ConsensusClusterPlus** | **GPL version 2**, no "or later" |
-| `cytonorm_rust_operator` | AGPL-3.0 |
-| `asinh_rust_operator` | AGPL-3.0 |
+**GPL-2.0-only**, because ConsensusClusterPlus is "GPL version 2" with no "or later" and the
+metaclustering here is a port of it. FlowSOM and R's `hclust` are GPL-2-*or-later*, so the map
+alone could have been GPL-3; the consensus module is what pins the crate.
 
-GPL-2-only and AGPL-3 are incompatible, so **the CytoNorm operator cannot link this crate while
-the metaclustering is a port of ConsensusClusterPlus and the operator is AGPL-3**. Three ways
-out, in the order I would consider them:
+Faris chose to move `cytonorm_rust_operator` from AGPL-3 to **GPL-2-or-later** rather than split
+this crate, so the operator keeps exact parity with the R pipeline and the distributed
+combination is GPL-2-only — which is what the upstream asks for. The reasoning is in that
+repository's `LICENSING.md`.
 
-1. **Split the crate.** The map, the mapping, `hclust` and `cutree` are all GPL-2-*or-later*
-   sources, so they can ship as GPL-3 and be linked from an AGPL-3 operator. Only the consensus
-   module is pinned to GPL-2-only, and it would live in a second crate that the operator does not
-   link. CytoNorm then needs a metaclustering that is not ConsensusClusterPlus — which changes
-   the answer, so it would have to be stated plainly rather than presented as parity.
-2. **Relicense the operator to GPL-2-or-later**, so it can link the whole crate. Cheapest
-   technically; it is a product decision about what Tercen's operators ship under.
-3. **Ask the ConsensusClusterPlus authors** for a GPL-3 or dual licence. Slow, and it may not
-   come.
-
-There is a fourth reading — that matching behaviour is not copying expression, and a
-reimplementation of a published method (Monti et al. 2003) is not a derivative work. I have not
-assumed it, because I wrote this by reading their source.
+Note for later: `asinh_rust_operator` is still AGPL-3, so **it cannot link this crate** as it
+stands. It has no reason to today.
 
 ## What is not here
 
@@ -50,7 +35,6 @@ assumed it, because I wrote this by reading their source.
 
 ## Next
 
-1. Faris decides the licence question.
-2. Wire it into `cytonorm_rust_operator` so `cluster > 1` works: train on the reference batch's
+1. Wire it into `cytonorm_rust_operator` so `cluster > 1` works: train on the reference batch's
    cells, then give every cell its metacluster, and fit a spline per (batch, metacluster,
    channel) — the code for which is already there and only ever sees one cluster today.
